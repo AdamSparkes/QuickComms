@@ -105,14 +105,19 @@ app.get('/dashboard', async (request, response) => {
     return response.render('index/authenticated');
 });
 
-app.get('/profile', async (request, response) => {
-    
+app.get('/profile', requireAuth, (req, res) => {
+    res.render('profile'); // You can enhance this to display user-specific data
 });
 
-app.post('/logout', (request, response) => {
-
+app.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Could not log out.");
+        }
+        res.redirect('/');
+    });
 });
-
 mongoose.connect(MONGO_URI)
     .then(() => app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)))
     .catch((err) => console.error('MongoDB connection error:', err));
