@@ -4,62 +4,6 @@
     <meta charset="UTF-8" />
     <title>Public Chatroom</title>
     <link rel="stylesheet" href="/styles.css" />
-    <style>
-      .chat-container {
-        display: flex;
-        flex-direction: column;
-        height: 80vh;
-        max-width: 600px;
-        margin: 0 auto;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
-      #messages-container {
-        flex: 1;
-        padding: 10px;
-        overflow-y: auto;
-        border-bottom: 1px solid #ccc;
-      }
-      #message-form {
-        display: flex;
-        border-top: 1px solid #ccc;
-      }
-      #message-input {
-        flex: 1;
-        padding: 10px;
-        border: none;
-        border-right: 1px solid #ccc;
-      }
-      #message-input:focus {
-        outline: none;
-      }
-      #message-form button {
-        padding: 10px 15px;
-        border: none;
-        background: #007bff;
-        color: #fff;
-        cursor: pointer;
-      }
-      #message-form button:hover {
-        background: #0056b3;
-      }
-      .main-content {
-        text-align: center;
-        margin: 20px;
-      }
-      .back-button {
-        display: inline-block;
-        margin-bottom: 20px;
-        padding: 10px 20px;
-        text-decoration: none;
-        background: #007bff;
-        color: #fff;
-        border-radius: 5px;
-      }
-      .back-button:hover {
-        background: #0056b3;
-      }
-    </style>
   </head>
   <body>
     <% include("partials/header", { user: { username: sender } }) %>
@@ -83,7 +27,8 @@
 
     <script>
       window.senderUsername = "<%- sender %>";
-      // We'll store the chatHistory directly in the page, similar to private chat
+      window.isPublicChat = true;
+
       window.existingMessages = <%- JSON.stringify(chatHistory || []) %>;
     </script>
 
@@ -95,8 +40,14 @@
         if (messagesContainer && Array.isArray(window.existingMessages)) {
           window.existingMessages.forEach((msg) => {
             const el = document.createElement("div");
-            const time = new Date(msg.timestamp);
-            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${msg.message}`;
+            el.classList.add("message");
+            el.innerHTML = `
+              <span class="message-time">[${new Date(
+                msg.timestamp
+              ).toLocaleTimeString()}]</span>
+              <span class="message-sender">${msg.sender}:</span>
+              <span class="message-content">${msg.message}</span>
+            `;
             messagesContainer.appendChild(el);
           });
           messagesContainer.scrollTop = messagesContainer.scrollHeight;

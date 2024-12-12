@@ -1,40 +1,9 @@
-<!-- views/admin.ejs -->
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="/styles.css" />
-    <style>
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-      th,
-      td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-      }
-      th {
-        background-color: #5d8efb;
-        color: white;
-      }
-      .action-button {
-        padding: 5px 10px;
-        background-color: #ff4c4c;
-        color: #fff;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-      .action-button:hover {
-        background-color: #e04343;
-      }
-    </style>
   </head>
   <body>
     <% include("partials/header", { user: currentUser }) %>
@@ -73,9 +42,7 @@
                   Delete
                 </button>
               </form>
-              <% } else { %>
-              <!-- No actions for admin users -->
-              N/A <% } %>
+              <% } else { %> N/A <% } %>
             </td>
           </tr>
           <% }); %>

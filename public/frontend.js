@@ -1,5 +1,3 @@
-// public/frontend.js
-
 const webSocket = new WebSocket("ws://localhost:3000/ws");
 
 const messagesContainer = document.getElementById("messages-container");
@@ -15,7 +13,6 @@ if (form && input) {
 
     // Determine if we're in a public chatroom or a private chat
     if (window.isPublicChat) {
-      // Public chat message
       webSocket.send(
         JSON.stringify({
           type: "public_message",
@@ -23,7 +20,6 @@ if (form && input) {
         })
       );
     } else {
-      // Private chat message
       if (!window.recipientUsername) {
         console.error("Recipient is not defined.");
         return;
@@ -88,7 +84,7 @@ function displayChatMessage(username, timestamp, message) {
 
 /**
  * Displays a notification message in the messages container
- * @param {string} message - The notification message
+ * @param {string} message notification message
  */
 function displayNotification(message) {
   if (!messagesContainer) return;
