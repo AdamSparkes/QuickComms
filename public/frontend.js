@@ -102,17 +102,31 @@ function onNewMessageReceived(username, timestamp, message) {
  * Handles sending a message to the server when the user sends a new message
  * @param {FormDataEvent} event The form submission event containing the message information
  */
-function onMessageSent(event) {
-  //Note: This code might not work, but it's left as a bit of a hint as to what you might want to do when handling
-  //      new messages. It assumes that user's are sending messages using a <form> with a <button> clicked to
-  //      do the submissions.
-  event.preventDefault();
-  const formData = new FormData(event.target, event.submitter);
-  const inputs = event.target.querySelectorAll("input");
+
+/**
+ * Displays a chat message in the messages container
+ * @param {string} username The username of the sender
+ * @param {string} timestamp The timestamp of the message
+ * @param {string} message The message text
+ */
+function displayChatMessage(username, timestamp, message) {
+  if (!messagesContainer) return;
+  const msgEl = document.createElement("div");
+  const time = new Date(timestamp);
+  msgEl.textContent = `[${time.toLocaleTimeString()}] ${username}: ${message}`;
+  messagesContainer.appendChild(msgEl);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-//Note: This code might not work, but it's left as a bit of a hint as to what you might want to do trying to setup
-//      adding new messages
-document
-  .getElementById("message-form")
-  .addEventListener("submit", onMessageSent);
+/**
+ * Displays a system message in the chat (e.g., user joined/left)
+ * @param {string} msg The system message to display
+ */
+function displaySystemMessage(msg) {
+  if (!messagesContainer) return;
+  const msgEl = document.createElement("div");
+  msgEl.style.fontStyle = "italic";
+  msgEl.textContent = msg;
+  messagesContainer.appendChild(msgEl);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
