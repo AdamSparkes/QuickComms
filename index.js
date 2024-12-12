@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 
+const User = require('./models/User');
+
 const PORT = 3000;
 //TODO: Replace with the URI pointing to your own MongoDB setup
 const MONGO_URI = 'mongodb://localhost:27017/keyin_test';
@@ -42,15 +44,60 @@ app.get('/', async (request, response) => {
 });
 
 app.get('/login', async (request, response) => {
-    
+    res.render('login', { errorMessage: null });
+});
+
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.render('login', { errorMessage: "You must fill in all fields." });
+    }
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.render('login', { errorMessage: "Invalid username or password." });
+        }
+
+        req.session.userId = user._id; // Save user in session
+        res.redirect('/dashboard'); // Redirect to dashboard
+    } catch (err) {
+        console.error(err);
+        res.render('login', { errorMessage: "An error occurred. Please try again." });
+    }
 });
 
 app.get('/signup', async (request, response) => {
     return response.render('signup', {errorMessage: null});
 });
 
-app.post('/signup', async (request, response) => {
+app.post('/signup', async (req, res) => {
+    const { username, password } = req.body;
 
+    if (!username || !password) {
+        return res.render('signup', { errorMessage: "You must fill in all fields" });
+    }
+
+    try {
+    
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.render('signup', { errorMessage: "Someone already has that name, try again." });
+        }
+
+      
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, password: hashedPassword });
+        await newUser.save();
+
+       
+        req.session.userId = newUser._id;
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error(err);
+        res.render('signup', { errorMessage: "An error occurred. Please try again." });
+    }
 });
 
 app.get('/dashboard', async (request, response) => {
