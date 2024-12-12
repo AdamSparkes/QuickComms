@@ -6,6 +6,7 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 
 const User = require('./models/User');
+const Message = require('./models/Message');
 
 const PORT = 3000;
 //TODO: Replace with the URI pointing to your own MongoDB setup
