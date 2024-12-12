@@ -29,7 +29,6 @@ let connectedClients = [];
 
 //Ive added console logs for the websockets for testing purposes just to make sure the ws handling is functioning as intended.
 
-const Message = require('./models/Message'); // Ensure the model is imported
 
 app.ws('/ws', (socket) => {
     console.log('WebSocket connection established');
