@@ -2,9 +2,9 @@
   <nav>
     <a href="/dashboard">Home</a>
     <a href="/profile">My Profile</a>
-    <a href="/chat">Chat</a>
+    <a href="/chatroom">Chat</a>
     <% if (user && user.role === 'admin') { %>
-    <a href="/admin">Admin DashBoard</a>
+    <a href="/admin">Admin Dashboard</a>
     <% } %>
     <form action="/logout" method="post" style="display: inline">
       <button type="submit" class="action-button" style="padding: 5px 10px">

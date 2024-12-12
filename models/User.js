@@ -1,3 +1,5 @@
+// models/User.js
+
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -13,7 +15,6 @@ const UserSchema = new mongoose.Schema({
     sparse: true, // Allows multiple documents without an email
     trim: true,
     lowercase: true,
-    // Optional: Add regex for email validation
     match: [/\S+@\S+\.\S+/, "is invalid"],
   },
   password: {

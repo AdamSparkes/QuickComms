@@ -1,12 +1,12 @@
-// frontend.js
+// public/frontend.js
 
 const webSocket = new WebSocket("ws://localhost:3000/ws");
 
 const messagesContainer = document.getElementById("messages-container");
 const form = document.getElementById("message-form");
 const input = document.getElementById("message-input");
+const onlineUsersContainer = document.getElementById("online-users");
 
-// This handler runs when the user submits the form to send a message.
 if (form && input) {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -42,7 +42,6 @@ if (form && input) {
   });
 }
 
-// This handler runs whenever a message is received from the server.
 webSocket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
 
@@ -54,6 +53,21 @@ webSocket.addEventListener("message", (event) => {
   // For public messages
   if (data.type === "public_new_message") {
     displayChatMessage(data.username, data.timestamp, data.message);
+  }
+
+  // For user joined
+  if (data.type === "user_joined") {
+    displayNotification(`${data.username} has joined the chat.`);
+  }
+
+  // For user left
+  if (data.type === "user_left") {
+    displayNotification(`${data.username} has left the chat.`);
+  }
+
+  // For updating online users
+  if (data.type === "update_online_users") {
+    updateOnlineUsersList(data.onlineUsers);
   }
 });
 
@@ -70,4 +84,33 @@ function displayChatMessage(username, timestamp, message) {
   msgEl.textContent = `[${time.toLocaleTimeString()}] ${username}: ${message}`;
   messagesContainer.appendChild(msgEl);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+/**
+ * Displays a notification message in the messages container
+ * @param {string} message - The notification message
+ */
+function displayNotification(message) {
+  if (!messagesContainer) return;
+  const notifEl = document.createElement("div");
+  notifEl.style.fontStyle = "italic";
+  notifEl.style.color = "#FFDD57";
+  notifEl.textContent = message;
+  messagesContainer.appendChild(notifEl);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+/**
+ * Updates the online users list
+ * @param {Array<string>} onlineUsers - List of online usernames
+ */
+function updateOnlineUsersList(onlineUsers) {
+  if (!onlineUsersContainer) return;
+  onlineUsersContainer.innerHTML = ""; // Clear existing list
+
+  onlineUsers.forEach((username) => {
+    const userEl = document.createElement("li");
+    userEl.textContent = username;
+    onlineUsersContainer.appendChild(userEl);
+  });
 }
