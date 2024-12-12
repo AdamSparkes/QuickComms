@@ -4,49 +4,109 @@
     <meta charset="UTF-8" />
     <title>Chat with <%= recipient %></title>
     <link rel="stylesheet" href="/styles.css" />
+    <style>
+      /* Inline styling for demonstration—move to styles.css if preferred */
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      #messages-container {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto; /* Enables scrolling if messages grow large */
+        border-bottom: 1px solid #ccc;
+      }
+
+      #message-form {
+        display: flex;
+        border-top: 1px solid #ccc;
+      }
+
+      #message-input {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-right: 1px solid #ccc;
+      }
+
+      #message-input:focus {
+        outline: none;
+      }
+
+      #message-form button {
+        padding: 10px 15px;
+        border: none;
+        background: #007bff;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      #message-form button:hover {
+        background: #0056b3;
+      }
+
+      .main-content {
+        text-align: center;
+        margin: 20px;
+      }
+
+      .back-button {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 10px 20px;
+        text-decoration: none;
+        background: #007bff;
+        color: #fff;
+        border-radius: 5px;
+      }
+
+      .back-button:hover {
+        background: #0056b3;
+      }
+    </style>
   </head>
   <body>
     <% include("partials/header", { user: { username: sender } }) %>
     <div class="main-content">
-      <h1>Live Chat with <%= recipient %></h1>
-      <div class="chat-widget">
+      <h1>Chat with <%= recipient %></h1>
+      <a href="/dashboard" class="back-button">Back to Dashboard</a>
+
+      <div class="chat-container">
         <div id="messages-container"></div>
-        <!-- Chat messages will be loaded here -->
+        <form id="message-form">
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Type a message..."
+            required
+          />
+          <button type="submit">Send</button>
+        </form>
       </div>
-      <form id="message-form">
-        <input
-          type="text"
-          id="message-input"
-          placeholder="Type a message..."
-          required
-        />
-        <button type="submit">Send</button>
-      </form>
     </div>
 
-    <!-- Inject sender, recipient, and chat history for frontend.js -->
     <script>
-      // Safely inject sender, recipient, and chat history
       window.senderUsername = "<%- sender %>";
       window.recipientUsername = "<%- recipient %>";
       window.existingMessages = <%- JSON.stringify(chatHistory || []) %>;
     </script>
 
-    <!-- Include frontend.js -->
     <script src="/frontend.js" type="application/javascript"></script>
 
-    <!-- Load existing chat messages -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const messagesContainer = document.getElementById("messages-container");
-
         if (messagesContainer && Array.isArray(window.existingMessages)) {
           window.existingMessages.forEach((msg) => {
             const el = document.createElement("div");
             const time = new Date(msg.timestamp);
-            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${
-              msg.message
-            }`;
+            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${msg.message}`;
             messagesContainer.appendChild(el);
           });
         }

@@ -1,86 +1,36 @@
 const express = require("express");
-const expressWs = require("express-ws");
 const path = require("path");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
-
 const User = require("./models/User");
 const Message = require("./models/Message");
 
-const PORT = 3000;
-//TODO: Replace with the URI pointing to your own MongoDB setup
-const MONGO_URI = "mongodb://localhost:27017/keyin_test";
 const app = express();
-expressWs(app);
+
+// Set up session middleware BEFORE using expressWs
+const sessionMiddleware = session({
+  secret: "chat-app-secret",
+  resave: false,
+  saveUninitialized: true,
+});
+app.use(sessionMiddleware);
+
+// Initialize express-ws AFTER session middleware
+const expressWs = require("express-ws")(app);
+
+const PORT = 3000;
+const MONGO_URI = "mongodb://localhost:27017/keyin_test";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
-app.use(
-  session({
-    secret: "chat-app-secret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
 
 let connectedClients = [];
 
-//Ive added console logs for the websockets for testing purposes just to make sure the ws handling is functioning as intended.
-
-
-app.ws("/ws", (socket, req) => {
-  console.log("WebSocket connection established");
-
-  // Use the session username as the WebSocket username
-  const username = req.session?.username || "Anonymous";
-
-  connectedClients.push({ socket, username });
-
-  socket.on("message", async (rawMessage) => {
-      console.log("Received WebSocket message:", rawMessage);
-      try {
-          const parsedMessage = JSON.parse(rawMessage);
-
-          if (parsedMessage.type === "chat_message") {
-              const { recipient, message } = parsedMessage;
-
-              // Save the message to the database
-              const newMessage = new Message({
-                  sender: username,
-                  recipient,
-                  message,
-              });
-              await newMessage.save();
-
-              // Send the message to the recipient
-              connectedClients.forEach(client => {
-                  if (client.username === recipient && client.socket.readyState === 1) {
-                      client.socket.send(JSON.stringify({
-                          type: "new_message",
-                          username, // Sender's username
-                          timestamp: new Date().toISOString(),
-                          message,
-                      }));
-                  }
-              });
-          }
-      } catch (err) {
-          console.error("Error parsing WebSocket message:", err);
-      }
-  });
-
-  socket.on("close", () => {
-      connectedClients = connectedClients.filter(client => client.socket !== socket);
-      console.log("WebSocket connection closed. Remaining clients:", connectedClients.length);
-  });
-});
-
-// Added some middleware to help with authenicating user, its just a simple check for a user ID to help me with clean posting of the profile EJS and showing personalized data.
-//If it failes to find a user ID it redirects them to log in.
+// Middleware to ensure user is authenticated
 function requireAuth(req, res, next) {
   if (!req.session.userId) {
     console.log("Authentication failed: No session user ID");
@@ -90,41 +40,95 @@ function requireAuth(req, res, next) {
   next();
 }
 
-app.get('/', (req, res) => {
-  console.log('Rendering unauthenticated index page');
-
-  // Count the number of connected WebSocket clients
+app.get("/", (req, res) => {
+  console.log("Rendering unauthenticated index page");
   const onlineCount = connectedClients.length;
-
-  // Pass onlineCount to the EJS template
-  res.render('index/unauthenticated', { onlineCount });
+  res.render("index/unauthenticated", { onlineCount });
 });
 
+// WebSocket route
+app.ws("/ws", (socket, req) => {
+  console.log("WebSocket connection established");
 
-// Chat Route
+  const username = req.session?.username || "Anonymous";
+  connectedClients.push({ socket, username });
+
+  socket.on("message", async (rawMessage) => {
+    console.log("Received WebSocket message:", rawMessage);
+    try {
+      const parsedMessage = JSON.parse(rawMessage);
+
+      if (parsedMessage.type === "chat_message") {
+        const { recipient, message } = parsedMessage;
+
+        const newMessage = new Message({
+          sender: username,
+          recipient,
+          message,
+        });
+        await newMessage.save();
+
+        // Broadcast the message to both the recipient AND the sender
+        connectedClients.forEach((client) => {
+          // Send to recipient if connected
+          if (client.username === recipient && client.socket.readyState === 1) {
+            client.socket.send(
+              JSON.stringify({
+                type: "new_message",
+                username, // sender's username
+                timestamp: new Date().toISOString(),
+                message,
+              })
+            );
+          }
+
+          // Send to sender as well, so the sender sees their message immediately
+          if (client.username === username && client.socket.readyState === 1) {
+            client.socket.send(
+              JSON.stringify({
+                type: "new_message",
+                username, // sender's username
+                timestamp: new Date().toISOString(),
+                message,
+              })
+            );
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Error parsing WebSocket message:", err);
+    }
+  });
+
+  socket.on("close", () => {
+    connectedClients = connectedClients.filter((client) => client.socket !== socket);
+    console.log("WebSocket connection closed. Remaining clients:", connectedClients.length);
+  });
+});
+
 app.get("/chat/:recipient", requireAuth, async (req, res) => {
   console.log(
-      "Rendering chat page for user:",
-      req.session.userId,
-      "with recipient:",
-      req.params.recipient
+    "Rendering chat page for user:",
+    req.session.userId,
+    "with recipient:",
+    req.params.recipient
   );
 
   const { recipient } = req.params;
   const sender = req.session.username;
 
   try {
-      const chatHistory = await Message.find({
-          $or: [
-              { sender, recipient },
-              { sender: recipient, recipient: sender },
-          ],
-      }).sort({ timestamp: 1 });
+    const chatHistory = await Message.find({
+      $or: [
+        { sender, recipient },
+        { sender: recipient, recipient: sender },
+      ],
+    }).sort({ timestamp: 1 });
 
-      res.render("chat", { chatHistory, sender, recipient });
+    res.render("chat", { chatHistory, sender, recipient });
   } catch (err) {
-      console.error("Error fetching chat history:", err);
-      res.status(500).send("Error loading chat page.");
+    console.error("Error fetching chat history:", err);
+    res.status(500).send("Error loading chat page.");
   }
 });
 
@@ -132,6 +136,7 @@ app.get("/login", async (req, res) => {
   console.log("Rendering login page");
   res.render("login", { errorMessage: null });
 });
+
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -149,8 +154,10 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    req.session.userId = user._id; // Save user in session
-    res.redirect("/dashboard"); // Redirect to dashboard
+    // Store both userId and username in session
+    req.session.userId = user._id;
+    req.session.username = user.username;
+    res.redirect("/dashboard");
   } catch (err) {
     console.error(err);
     res.render("login", {
@@ -159,8 +166,8 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/signup", async (request, response) => {
-  return response.render("signup", { errorMessage: null });
+app.get("/signup", async (req, res) => {
+  return res.render("signup", { errorMessage: null });
 });
 
 app.post("/signup", async (req, res) => {
@@ -184,7 +191,9 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
 
+    // Store both userId and username in session
     req.session.userId = newUser._id;
+    req.session.username = newUser.username;
     res.redirect("/dashboard");
   } catch (err) {
     console.error(err);
@@ -194,53 +203,57 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get('/dashboard', requireAuth, async (req, res) => {
-  console.log('Rendering dashboard for user ID:', req.session.userId);
+app.get("/dashboard", requireAuth, async (req, res) => {
+  console.log("Rendering dashboard for user ID:", req.session.userId);
 
   try {
-      // Fetch the user from the database
-      const user = await User.findById(req.session.userId).lean();
-      if (!user) {
-          return res.status(404).send("User not found.");
-      }
+    const user = await User.findById(req.session.userId).lean();
+    if (!user) {
+      return res.status(404).send("User not found.");
+    }
 
-      // Pass the user object to the EJS template
-      res.render('index/authenticated', { user });
+    res.render("index/authenticated", { user });
   } catch (err) {
-      console.error('Error fetching user:', err);
-      res.status(500).send("An error occurred while loading the dashboard.");
+    console.error("Error fetching user:", err);
+    res.status(500).send("An error occurred while loading the dashboard.");
   }
 });
 
-// Profile Route
 app.get("/profile", requireAuth, async (req, res) => {
   console.log("Rendering profile page for user ID:", req.session.userId);
 
   try {
-      // Fetch the user from the database
-      const profileUser = await User.findById(req.session.userId).lean();
-      if (!profileUser) {
-          return res.status(404).send("User not found.");
-      }
+    const profileUser = await User.findById(req.session.userId).lean();
+    if (!profileUser) {
+      return res.status(404).send("User not found.");
+    }
 
-      // Pass the profileUser to the template
-      res.render("profile", { profileUser });
+    res.render("profile", { profileUser });
   } catch (err) {
-      console.error("Error fetching user profile:", err);
-      res.status(500).send("An error occurred while loading the profile.");
+    console.error("Error fetching user profile:", err);
+    res.status(500).send("An error occurred while loading the profile.");
   }
 });
 
-app.get('/new-message', requireAuth, async (req, res) => {
+app.get("/new-message", requireAuth, async (req, res) => {
   try {
-      // Exclude the logged-in user from the list of recipients
-      const users = await User.find({ username: { $ne: req.session.username } }).lean();
-      const sender = { username: req.session.username }; // Current logged-in user
-      res.render('newMessage', { users, sender });
+    const users = await User.find({ username: { $ne: req.session.username } }).lean();
+    const sender = { username: req.session.username };
+    res.render("newMessage", { users, sender });
   } catch (err) {
-      console.error('Error fetching users for new message:', err);
-      res.status(500).send('Error loading new message page.');
+    console.error("Error fetching users for new message:", err);
+    res.status(500).send("Error loading new message page.");
   }
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.status(500).send("Error logging out.");
+    }
+    res.redirect("/");
+  });
 });
 
 mongoose
@@ -251,36 +264,3 @@ mongoose
     )
   )
   .catch((err) => console.error("MongoDB connection error:", err));
-
-/**
- * Handles a client disconnecting from the chat server
- *
- * This function isn't necessary and should be deleted if unused. But it's left as a hint to how you might want
- * to handle the disconnection of clients
- *
- * @param {string} username The username of the client who disconnected
- */
-function onClientDisconnected(username) {}
-
-/**
- * Handles a new client connecting to the chat server
- 
- * This function isn't necessary and should be deleted if unused. But it's left as a hint to how you might want
- * to handle the connection of clients
- *
- * @param {WebSocket} newSocket The socket the client has opened with the server
- * @param {string} username The username of the user who connected
- */
-function onNewClientConnected(newSocket, username) {}
-
-/**
- * Handles a new chat message being sent from a client
- *
- * This function isn't necessary and should be deleted if unused. But it's left as a hint to how you might want
- * to handle new messages
- *
- * @param {string} message The message being sent
- * @param {string} username The username of the user who sent the message
- * @param {strng} id The ID of the user who sent the message
- */
-async function onNewMessage(message, username, id) {}
