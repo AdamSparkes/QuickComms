@@ -10,10 +10,16 @@
     <div class="main-content">
       <h1>Live Chat with <%= recipient %></h1>
       <div class="chat-widget">
-        <div id="messages-container"></div> <!-- Chat messages will be loaded here -->
+        <div id="messages-container"></div>
+        <!-- Chat messages will be loaded here -->
       </div>
       <form id="message-form">
-        <input type="text" id="message-input" placeholder="Type a message..." required />
+        <input
+          type="text"
+          id="message-input"
+          placeholder="Type a message..."
+          required
+        />
         <button type="submit">Send</button>
       </form>
     </div>
@@ -38,7 +44,9 @@
           window.existingMessages.forEach((msg) => {
             const el = document.createElement("div");
             const time = new Date(msg.timestamp);
-            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${msg.message}`;
+            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${
+              msg.message
+            }`;
             messagesContainer.appendChild(el);
           });
         }
