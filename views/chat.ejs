@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat with <%= recipient %></title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <% include("./partials/header", { user: { username: sender } }) %>
+    <div class="main-content">
+      <h1>Live Chat with <%= recipient %></h1>
+      <div class="chat-widget"></div>
+    </div>
+
+    <!-- Pass sender, recipient, and chat history to frontend.js -->
+    <script>
+      // Ensure that 'sender' and 'recipient' are safely injected
+      window.senderUsername = "<%- sender %>";
+      window.recipientUsername = "<%- recipient %>";
+
+      // Safely inject the 'chatHistory' array or default to an empty array
+      window.existingMessages = <%- JSON.stringify(chatHistory || []) %>;
+    </script>
+
+    <!-- Include frontend.js -->
+    <script src="/frontend.js" type="application/javascript"></script>
+
+    <!-- Populate existing messages after frontend.js initializes the chat widget -->
+    <script>
+      // Wait for the DOM to fully load to ensure 'messages-container' is available
+      document.addEventListener("DOMContentLoaded", () => {
+        const messagesContainer = document.getElementById("messages-container");
+        if (messagesContainer && Array.isArray(window.existingMessages)) {
+          window.existingMessages.forEach((msg) => {
+            const el = document.createElement("div");
+            const time = new Date(msg.timestamp);
+            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${
+              msg.message
+            }`;
+            messagesContainer.appendChild(el);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
