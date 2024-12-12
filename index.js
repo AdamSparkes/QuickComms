@@ -101,10 +101,16 @@ function requireAuth(req, res, next) {
   next();
 }
 
-app.get("/", (req, res) => {
-  console.log("Rendering unauthenticated index page");
-  res.render("index/unauthenticated");
+app.get('/', (req, res) => {
+  console.log('Rendering unauthenticated index page');
+
+  // Count the number of connected WebSocket clients
+  const onlineCount = connectedClients.length;
+
+  // Pass onlineCount to the EJS template
+  res.render('index/unauthenticated', { onlineCount });
 });
+
 
 // Chat Route
 app.get("/chat/:recipient", requireAuth, async (req, res) => {
