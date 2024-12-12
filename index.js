@@ -26,18 +26,40 @@ app.use(session({
 
 let connectedClients = [];
 
-//Note: These are (probably) not all the required routes, but are a decent starting point for the routes you'll probably need
+//Ive added console logs for the websockets for testing purposes just to make sure the ws handling is functioning as intended.
 
-app.ws('/ws', (socket, request) => {    
+app.ws('/ws', (socket) => {
+    console.log('WebSocket connection established');
+
     socket.on('message', (rawMessage) => {
-        const parsedMessage = JSON.parse(rawMessage);
         
+        try {
+            const parsedMessage = JSON.parse(rawMessage);
+            console.log('Parsed message:', parsedMessage);
+        } catch (err) {
+            console.error('Error parsing WebSocket message:', err);
+        }
     });
 
     socket.on('close', () => {
-        
+        connectedClients = connectedClients.filter(client => client !== socket);
+        console.log('WebSocket connection closed. Remaining clients:', connectedClients.length);
     });
+
+    connectedClients.push(socket);
+    console.log('New WebSocket client connected. Total clients:', connectedClients.length);
 });
+
+// Added some middleware to help with authenicating user.
+function requireAuth(req, res, next) {
+    if (!req.session.userId) {
+        console.log('Authentication failed: No session user ID');
+        return res.redirect('/login');
+    }
+    console.log('Authentication successful for user ID:', req.session.userId);
+    next();
+}
+
 
 app.get('/', async (request, response) => {
     response.render('index/unauthenticated');
@@ -106,7 +128,7 @@ app.get('/dashboard', async (request, response) => {
 });
 
 app.get('/profile', requireAuth, (req, res) => {
-    res.render('profile'); // You can enhance this to display user-specific data
+    res.render('profile'); 
 });
 
 app.post('/logout', (req, res) => {
