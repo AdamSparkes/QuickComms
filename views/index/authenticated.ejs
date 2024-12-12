@@ -11,11 +11,13 @@
         <h1>Welcome, <%= user.username %>!</h1>
         <p>You're logged in! Start chatting with your friends.</p>
 
-        <!-- Add a button/link to go to the new message page -->
-        <a href="/new-message" class="action-button">Chat now!</a>
-
-        <!-- Other dashboard content -->
+        <!-- Existing buttons -->
+        <a href="/new-message" class="action-button">Start a New Message</a>
         <a href="/profile" class="action-button">View Profile</a>
+
+        <!-- New button to go to the chatroom -->
+        <a href="/chatroom" class="action-button">Join Public Chatroom</a>
+
         <form action="/logout" method="POST" style="display: inline;">
             <button type="submit" class="action-button">Logout</button>
         </form>

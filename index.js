@@ -40,96 +40,11 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// Routes
 app.get("/", (req, res) => {
   console.log("Rendering unauthenticated index page");
   const onlineCount = connectedClients.length;
   res.render("index/unauthenticated", { onlineCount });
-});
-
-// WebSocket route
-app.ws("/ws", (socket, req) => {
-  console.log("WebSocket connection established");
-
-  const username = req.session?.username || "Anonymous";
-  connectedClients.push({ socket, username });
-
-  socket.on("message", async (rawMessage) => {
-    console.log("Received WebSocket message:", rawMessage);
-    try {
-      const parsedMessage = JSON.parse(rawMessage);
-
-      if (parsedMessage.type === "chat_message") {
-        const { recipient, message } = parsedMessage;
-
-        const newMessage = new Message({
-          sender: username,
-          recipient,
-          message,
-        });
-        await newMessage.save();
-
-        // Broadcast the message to both the recipient AND the sender
-        connectedClients.forEach((client) => {
-          // Send to recipient if connected
-          if (client.username === recipient && client.socket.readyState === 1) {
-            client.socket.send(
-              JSON.stringify({
-                type: "new_message",
-                username, // sender's username
-                timestamp: new Date().toISOString(),
-                message,
-              })
-            );
-          }
-
-          // Send to sender as well, so the sender sees their message immediately
-          if (client.username === username && client.socket.readyState === 1) {
-            client.socket.send(
-              JSON.stringify({
-                type: "new_message",
-                username, // sender's username
-                timestamp: new Date().toISOString(),
-                message,
-              })
-            );
-          }
-        });
-      }
-    } catch (err) {
-      console.error("Error parsing WebSocket message:", err);
-    }
-  });
-
-  socket.on("close", () => {
-    connectedClients = connectedClients.filter((client) => client.socket !== socket);
-    console.log("WebSocket connection closed. Remaining clients:", connectedClients.length);
-  });
-});
-
-app.get("/chat/:recipient", requireAuth, async (req, res) => {
-  console.log(
-    "Rendering chat page for user:",
-    req.session.userId,
-    "with recipient:",
-    req.params.recipient
-  );
-
-  const { recipient } = req.params;
-  const sender = req.session.username;
-
-  try {
-    const chatHistory = await Message.find({
-      $or: [
-        { sender, recipient },
-        { sender: recipient, recipient: sender },
-      ],
-    }).sort({ timestamp: 1 });
-
-    res.render("chat", { chatHistory, sender, recipient });
-  } catch (err) {
-    console.error("Error fetching chat history:", err);
-    res.status(500).send("Error loading chat page.");
-  }
 });
 
 app.get("/login", async (req, res) => {
@@ -246,6 +161,47 @@ app.get("/new-message", requireAuth, async (req, res) => {
   }
 });
 
+// Private chat route
+app.get("/chat/:recipient", requireAuth, async (req, res) => {
+  console.log(
+    "Rendering chat page for user:",
+    req.session.userId,
+    "with recipient:",
+    req.params.recipient
+  );
+
+  const { recipient } = req.params;
+  const sender = req.session.username;
+
+  try {
+    const chatHistory = await Message.find({
+      $or: [
+        { sender, recipient },
+        { sender: recipient, recipient: sender },
+      ],
+    }).sort({ timestamp: 1 });
+
+    res.render("chat", { chatHistory, sender, recipient });
+  } catch (err) {
+    console.error("Error fetching chat history:", err);
+    res.status(500).send("Error loading chat page.");
+  }
+});
+
+// Public chatroom route
+app.get("/chatroom", requireAuth, async (req, res) => {
+  console.log("Rendering public chatroom for user:", req.session.userId);
+  try {
+    // Fetch all public messages
+    const chatHistory = await Message.find({ recipient: "public" }).sort({ timestamp: 1 });
+    const sender = req.session.username;
+    res.render("chatroom", { chatHistory, sender });
+  } catch (err) {
+    console.error("Error fetching public chat history:", err);
+    res.status(500).send("Error loading public chatroom.");
+  }
+});
+
 app.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
@@ -253,6 +209,84 @@ app.post("/logout", (req, res) => {
       return res.status(500).send("Error logging out.");
     }
     res.redirect("/");
+  });
+});
+
+// WebSocket route
+app.ws("/ws", (socket, req) => {
+  console.log("WebSocket connection established");
+
+  const username = req.session?.username || "Anonymous";
+  connectedClients.push({ socket, username });
+
+  socket.on("message", async (rawMessage) => {
+    console.log("Received WebSocket message:", rawMessage);
+    try {
+      const parsedMessage = JSON.parse(rawMessage);
+
+      // Handle private chat messages
+      if (parsedMessage.type === "chat_message") {
+        const { recipient, message } = parsedMessage;
+        const newMessage = new Message({ sender: username, recipient, message });
+        await newMessage.save();
+
+        // Broadcast to sender and recipient
+        connectedClients.forEach((client) => {
+          // Send to recipient if connected
+          if (client.username === recipient && client.socket.readyState === 1) {
+            client.socket.send(
+              JSON.stringify({
+                type: "new_message",
+                username,
+                timestamp: new Date().toISOString(),
+                message,
+              })
+            );
+          }
+
+          // Send to sender as well
+          if (client.username === username && client.socket.readyState === 1) {
+            client.socket.send(
+              JSON.stringify({
+                type: "new_message",
+                username,
+                timestamp: new Date().toISOString(),
+                message,
+              })
+            );
+          }
+        });
+      }
+
+      // Handle public chat messages
+      if (parsedMessage.type === "public_message") {
+        const { message } = parsedMessage;
+        const newMessage = new Message({ sender: username, recipient: "public", message });
+        await newMessage.save();
+
+        // Broadcast to ALL connected clients
+        connectedClients.forEach((client) => {
+          if (client.socket.readyState === 1) {
+            client.socket.send(
+              JSON.stringify({
+                type: "public_new_message",
+                username,
+                timestamp: new Date().toISOString(),
+                message,
+              })
+            );
+          }
+        });
+      }
+
+    } catch (err) {
+      console.error("Error parsing WebSocket message:", err);
+    }
+  });
+
+  socket.on("close", () => {
+    connectedClients = connectedClients.filter((client) => client.socket !== socket);
+    console.log("WebSocket connection closed. Remaining clients:", connectedClients.length);
   });
 });
 

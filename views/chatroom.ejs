@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Public Chatroom</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      #messages-container {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+        border-bottom: 1px solid #ccc;
+      }
+      #message-form {
+        display: flex;
+        border-top: 1px solid #ccc;
+      }
+      #message-input {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-right: 1px solid #ccc;
+      }
+      #message-input:focus {
+        outline: none;
+      }
+      #message-form button {
+        padding: 10px 15px;
+        border: none;
+        background: #007bff;
+        color: #fff;
+        cursor: pointer;
+      }
+      #message-form button:hover {
+        background: #0056b3;
+      }
+      .main-content {
+        text-align: center;
+        margin: 20px;
+      }
+      .back-button {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 10px 20px;
+        text-decoration: none;
+        background: #007bff;
+        color: #fff;
+        border-radius: 5px;
+      }
+      .back-button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <% include("partials/header", { user: { username: sender } }) %>
+    <div class="main-content">
+      <h1>Public Chatroom</h1>
+      <a href="/dashboard" class="back-button">Back to Dashboard</a>
+
+      <div class="chat-container">
+        <div id="messages-container"></div>
+        <form id="message-form">
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Type a message..."
+            required
+          />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      window.senderUsername = "<%- sender %>";
+      // We'll store the chatHistory directly in the page, similar to private chat
+      window.existingMessages = <%- JSON.stringify(chatHistory || []) %>;
+    </script>
+
+    <script src="/frontend.js" type="application/javascript"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const messagesContainer = document.getElementById("messages-container");
+        if (messagesContainer && Array.isArray(window.existingMessages)) {
+          window.existingMessages.forEach((msg) => {
+            const el = document.createElement("div");
+            const time = new Date(msg.timestamp);
+            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${msg.message}`;
+            messagesContainer.appendChild(el);
+          });
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      });
+    </script>
+  </body>
+</html>
