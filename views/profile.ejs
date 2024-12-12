@@ -6,11 +6,12 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <% include("./partials/header", {user: user}) %>
+    <% include("partials/header", { user: profileUser }) %>
     <div class="main-content">
-      <h1><%= profileUser.username %>'s Profile</h1>
-      <p>Username: <%= profileUser.username %></p>
-      <p>Joined: <%= profileUser.joinDate.toDateString() %></p>
+      <h1>Welcome to your profile, <%= profileUser.username %>!</h1>
+      <p>Email: <%= profileUser.email || "Not provided" %></p>
+      <p>Joined on: <%= new Date(profileUser.createdAt).toLocaleDateString() %></p>
+      <a href="/dashboard" class="action-button">Go to Dashboard</a>
     </div>
   </body>
 </html>

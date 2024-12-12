@@ -139,10 +139,10 @@ app.get("/chat/:recipient", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/login", async (request, response) => {
+app.get("/login", async (req, res) => {
+  console.log("Rendering login page");
   res.render("login", { errorMessage: null });
 });
-
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -224,19 +224,22 @@ app.get('/dashboard', requireAuth, async (req, res) => {
 });
 
 // Profile Route
-app.get("/profile", requireAuth, (req, res) => {
+app.get("/profile", requireAuth, async (req, res) => {
   console.log("Rendering profile page for user ID:", req.session.userId);
-  res.render("profile");
-});
 
-app.post("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Could not log out.");
-    }
-    res.redirect("/");
-  });
+  try {
+      // Fetch the user from the database
+      const profileUser = await User.findById(req.session.userId).lean();
+      if (!profileUser) {
+          return res.status(404).send("User not found.");
+      }
+
+      // Pass the profileUser to the template
+      res.render("profile", { profileUser });
+  } catch (err) {
+      console.error("Error fetching user profile:", err);
+      res.status(500).send("An error occurred while loading the profile.");
+  }
 });
 mongoose
   .connect(MONGO_URI)
