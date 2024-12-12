@@ -6,37 +6,39 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <% include("./partials/header", { user: { username: sender } }) %>
+    <% include("partials/header", { user: { username: sender } }) %>
     <div class="main-content">
       <h1>Live Chat with <%= recipient %></h1>
-      <div class="chat-widget"></div>
+      <div class="chat-widget">
+        <div id="messages-container"></div> <!-- Chat messages will be loaded here -->
+      </div>
+      <form id="message-form">
+        <input type="text" id="message-input" placeholder="Type a message..." required />
+        <button type="submit">Send</button>
+      </form>
     </div>
 
-    <!-- Pass sender, recipient, and chat history to frontend.js -->
+    <!-- Inject sender, recipient, and chat history for frontend.js -->
     <script>
-      // Ensure that 'sender' and 'recipient' are safely injected
+      // Safely inject sender, recipient, and chat history
       window.senderUsername = "<%- sender %>";
       window.recipientUsername = "<%- recipient %>";
-
-      // Safely inject the 'chatHistory' array or default to an empty array
       window.existingMessages = <%- JSON.stringify(chatHistory || []) %>;
     </script>
 
     <!-- Include frontend.js -->
     <script src="/frontend.js" type="application/javascript"></script>
 
-    <!-- Populate existing messages after frontend.js initializes the chat widget -->
+    <!-- Load existing chat messages -->
     <script>
-      // Wait for the DOM to fully load to ensure 'messages-container' is available
       document.addEventListener("DOMContentLoaded", () => {
         const messagesContainer = document.getElementById("messages-container");
+
         if (messagesContainer && Array.isArray(window.existingMessages)) {
           window.existingMessages.forEach((msg) => {
             const el = document.createElement("div");
             const time = new Date(msg.timestamp);
-            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${
-              msg.message
-            }`;
+            el.textContent = `[${time.toLocaleTimeString()}] ${msg.sender}: ${msg.message}`;
             messagesContainer.appendChild(el);
           });
         }

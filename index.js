@@ -31,21 +31,12 @@ let connectedClients = [];
 
 //Ive added console logs for the websockets for testing purposes just to make sure the ws handling is functioning as intended.
 
+const Message = require("./models/Message"); // Ensure the model is imported
+
 app.ws("/ws", (socket) => {
   console.log("WebSocket connection established");
   const username = socket.upgradeReq?.headers["username"];
   connectedClients.push({ socket, username });
-  connectedClients.forEach((client) => {
-    if (client.socket.readyState === 1) {
-      client.socket.send(
-        JSON.stringify({
-          type: "user_joined",
-          username,
-          onlineUsers: connectedClients.map((c) => c.username).filter(Boolean),
-        })
-      );
-    }
-  });
 
   socket.on("message", async (rawMessage) => {
     console.log("Received WebSocket message:", rawMessage);
