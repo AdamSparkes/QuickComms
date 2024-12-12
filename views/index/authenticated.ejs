@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-
-    <title>Sonic's DashBoard (lol get it)</title>
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <% include("../partials/header", {user: user}) %>
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <% include("../partials/header", { user: user }) %>
     <div class="main-content">
-      <h1>Welcome, <%= user.username %>!</h1>
-      <p>You're logged in dogg! join the chat with the homies</p>
-      <a href="/chat" class="action-button">Go to chat</a>
-      <a href="/profile" class="action-button">View My Profile</a>
-      <% if (user.role === 'admin') { %>
-      <a href="/admin" class="action-button">Admin Dashboard</a>
-      <% } %>
+        <h1>Welcome, <%= user.username %>!</h1>
+        <p>You're logged in! Start chatting with your friends.</p>
+
+        <!-- Add a button/link to go to the new message page -->
+        <a href="/new-message" class="action-button">Start a New Message</a>
+
+        <!-- Other dashboard content -->
+        <a href="/profile" class="action-button">View Profile</a>
+        <form action="/logout" method="POST" style="display: inline;">
+            <button type="submit" class="action-button">Logout</button>
+        </form>
     </div>
-  </body>
+</body>
 </html>

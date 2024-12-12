@@ -32,7 +32,17 @@ if (chatWidget) {
     event.preventDefault();
     const message = input.value.trim();
     if (!message) return;
-    webSocket.send(JSON.stringify({ type: "chat_message", message }));
+
+    if (!window.recipientUsername) {
+      console.error("Recipient is not defined.");
+      return;
+    }
+    webSocket.send(JSON.stringify({
+      type: "chat_message",
+      recipient: window.recipientUsername, 
+      message,
+    }));
+
     input.value = "";
   });
 }

@@ -32,64 +32,53 @@ let connectedClients = [];
 //Ive added console logs for the websockets for testing purposes just to make sure the ws handling is functioning as intended.
 
 
-app.ws("/ws", (socket) => {
+app.ws("/ws", (socket, req) => {
   console.log("WebSocket connection established");
-  const username = socket.upgradeReq?.headers["username"];
+
+  // Use the session username as the WebSocket username
+  const username = req.session?.username || "Anonymous";
+
   connectedClients.push({ socket, username });
 
   socket.on("message", async (rawMessage) => {
-    console.log("Received WebSocket message:", rawMessage);
-    try {
-      const parsedMessage = JSON.parse(rawMessage);
-      if (parsedMessage.type === "chat_message") {
-        const { recipient, message } = parsedMessage;
-        connectedClients.forEach((client) => {
-          if (client.username === recipient && client.socket.readyState === 1) {
-            client.socket.send(
-              JSON.stringify({
-                type: "new_message",
-                username,
-                timestamp: new Date().toISOString(),
-                message,
-              })
-            );
+      console.log("Received WebSocket message:", rawMessage);
+      try {
+          const parsedMessage = JSON.parse(rawMessage);
+
+          if (parsedMessage.type === "chat_message") {
+              const { recipient, message } = parsedMessage;
+
+              // Save the message to the database
+              const newMessage = new Message({
+                  sender: username,
+                  recipient,
+                  message,
+              });
+              await newMessage.save();
+
+              // Send the message to the recipient
+              connectedClients.forEach(client => {
+                  if (client.username === recipient && client.socket.readyState === 1) {
+                      client.socket.send(JSON.stringify({
+                          type: "new_message",
+                          username, // Sender's username
+                          timestamp: new Date().toISOString(),
+                          message,
+                      }));
+                  }
+              });
           }
-        });
+      } catch (err) {
+          console.error("Error parsing WebSocket message:", err);
       }
-    } catch (err) {
-      console.error("Error parsing WebSocket message:", err);
-    }
   });
 
   socket.on("close", () => {
-    connectedClients = connectedClients.filter(
-      (client) => client.socket !== socket
-    );
-    connectedClients.forEach((client) => {
-      if (client.socket.readyState === 1) {
-        client.socket.send(
-          JSON.stringify({
-            type: "user_left",
-            username,
-            onlineUsers: connectedClients
-              .map((c) => c.username)
-              .filter(Boolean),
-          })
-        );
-      }
-    });
-
-    console.log(
-      "WebSocket connection closed. Remaining clients:",
-      connectedClients.length
-    );
+      connectedClients = connectedClients.filter(client => client.socket !== socket);
+      console.log("WebSocket connection closed. Remaining clients:", connectedClients.length);
   });
-
-  console.log(
-    "New WebSocket client connected. Total clients:",
-    connectedClients.length
-  );
 });
+
 // Added some middleware to help with authenicating user, its just a simple check for a user ID to help me with clean posting of the profile EJS and showing personalized data.
 //If it failes to find a user ID it redirects them to log in.
 function requireAuth(req, res, next) {
@@ -115,27 +104,27 @@ app.get('/', (req, res) => {
 // Chat Route
 app.get("/chat/:recipient", requireAuth, async (req, res) => {
   console.log(
-    "Rendering chat page for user:",
-    req.session.userId,
-    "with recipient:",
-    req.params.recipient
+      "Rendering chat page for user:",
+      req.session.userId,
+      "with recipient:",
+      req.params.recipient
   );
 
   const { recipient } = req.params;
   const sender = req.session.username;
 
   try {
-    const chatHistory = await Message.find({
-      $or: [
-        { sender, recipient },
-        { sender: recipient, recipient: sender },
-      ],
-    }).sort({ timestamp: 1 });
+      const chatHistory = await Message.find({
+          $or: [
+              { sender, recipient },
+              { sender: recipient, recipient: sender },
+          ],
+      }).sort({ timestamp: 1 });
 
-    res.render("chat", { chatHistory, sender, recipient });
+      res.render("chat", { chatHistory, sender, recipient });
   } catch (err) {
-    console.error("Error fetching chat history:", err);
-    res.status(500).send("Error loading chat page.");
+      console.error("Error fetching chat history:", err);
+      res.status(500).send("Error loading chat page.");
   }
 });
 
@@ -241,6 +230,19 @@ app.get("/profile", requireAuth, async (req, res) => {
       res.status(500).send("An error occurred while loading the profile.");
   }
 });
+
+app.get('/new-message', requireAuth, async (req, res) => {
+  try {
+      // Exclude the logged-in user from the list of recipients
+      const users = await User.find({ username: { $ne: req.session.username } }).lean();
+      const sender = { username: req.session.username }; // Current logged-in user
+      res.render('newMessage', { users, sender });
+  } catch (err) {
+      console.error('Error fetching users for new message:', err);
+      res.status(500).send('Error loading new message page.');
+  }
+});
+
 mongoose
   .connect(MONGO_URI)
   .then(() =>
@@ -262,7 +264,7 @@ function onClientDisconnected(username) {}
 
 /**
  * Handles a new client connecting to the chat server
- *
+ 
  * This function isn't necessary and should be deleted if unused. But it's left as a hint to how you might want
  * to handle the connection of clients
  *

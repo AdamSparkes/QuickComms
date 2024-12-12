@@ -6,14 +6,22 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <% include("partials/header", { user: { username: sender } }) %>
+    <% include("partials/header", { user: sender }) %>
     <div class="main-content">
-        <h1>Select a User to Message</h1>
+        <h1>Start a New Message</h1>
+        <p>Select a user to message:</p>
         <ul>
-            <% users.forEach(user => { %>
-                <li><a href="/chat/<%= user.username %>"><%= user.username %></a></li>
-            <% }) %>
+            <% if (users.length === 0) { %>
+                <p>No other users are available to message.</p>
+            <% } else { %>
+                <% users.forEach(user => { %>
+                    <li>
+                        <a href="/chat/<%= user.username %>"><%= user.username %></a>
+                    </li>
+                <% }); %>
+            <% } %>
         </ul>
+        <a href="/dashboard" class="action-button">Back to Dashboard</a>
     </div>
 </body>
 </html>
