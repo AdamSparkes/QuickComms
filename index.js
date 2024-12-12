@@ -29,33 +29,40 @@ let connectedClients = [];
 
 //Ive added console logs for the websockets for testing purposes just to make sure the ws handling is functioning as intended.
 
+const Message = require('./models/Message'); // Ensure the model is imported
+
 app.ws('/ws', (socket) => {
     console.log('WebSocket connection established');
     const username = socket.upgradeReq?.headers['username']; 
     connectedClients.push({ socket, username });
-    connectedClients.forEach(client => {
-        if (client.socket.readyState === 1) {
-            client.socket.send(JSON.stringify({
-                type: 'user_joined',
-                username,
-                onlineUsers: connectedClients.map(c => c.username).filter(Boolean),
-            }));
-        }
-    });
 
     socket.on('message', async (rawMessage) => {
         console.log('Received WebSocket message:', rawMessage);
         try {
             const parsedMessage = JSON.parse(rawMessage);
+
+            // Handle chat messages
             if (parsedMessage.type === 'chat_message') {
                 const { recipient, message } = parsedMessage;
+
+                // Save the message to MongoDB
+                const newMessage = new Message({
+                    sender: username,
+                    recipient,
+                    message,
+                });
+
+                await newMessage.save();
+                console.log('Message saved to MongoDB:', newMessage);
+
+                // Emit new_message to recipient
                 connectedClients.forEach(client => {
                     if (client.username === recipient && client.socket.readyState === 1) {
                         client.socket.send(JSON.stringify({
                             type: 'new_message',
                             username,
-                            timestamp: new Date().toISOString(),
-                            message,
+                            timestamp: newMessage.timestamp,
+                            message: newMessage.message,
                         }));
                     }
                 });
@@ -67,16 +74,6 @@ app.ws('/ws', (socket) => {
 
     socket.on('close', () => {
         connectedClients = connectedClients.filter(client => client.socket !== socket);
-        connectedClients.forEach(client => {
-            if (client.socket.readyState === 1) {
-                client.socket.send(JSON.stringify({
-                    type: 'user_left',
-                    username,
-                    onlineUsers: connectedClients.map(c => c.username).filter(Boolean),
-                }));
-            }
-        });
-
         console.log('WebSocket connection closed. Remaining clients:', connectedClients.length);
     });
 
@@ -96,8 +93,14 @@ function requireAuth(req, res, next) {
 
 app.get('/', (req, res) => {
     console.log('Rendering unauthenticated index page');
-    res.render('index/unauthenticated');
+
+    // Count the number of connected clients
+    const onlineCount = connectedClients.length;
+
+    // Pass onlineCount to the EJS template
+    res.render('index/unauthenticated', { onlineCount });
 });
+
 
 // Chat Route
 app.get('/chat/:recipient', requireAuth, async (req, res) => {
@@ -107,14 +110,19 @@ app.get('/chat/:recipient', requireAuth, async (req, res) => {
     const sender = req.session.username;
 
     try {
+        
         const chatHistory = await Message.find({
             $or: [
                 { sender, recipient },
                 { sender: recipient, recipient: sender }
             ]
-        }).sort({ timestamp: 1 });
+        }).sort({ timestamp: 1 }); 
 
-        res.render('chat', { chatHistory, sender, recipient });
+        
+        console.log('Chat history:', chatHistory);
+
+        
+        res.render('chat', { chatHistory: chatHistory || [], sender, recipient });
     } catch (err) {
         console.error('Error fetching chat history:', err);
         res.status(500).send('Error loading chat page.');
@@ -122,7 +130,8 @@ app.get('/chat/:recipient', requireAuth, async (req, res) => {
 });
 
 
-app.get('/login', async (request, response) => {
+app.get('/login', async (req, res) => {
+    console.log('Rendering login page');
     res.render('login', { errorMessage: null });
 });
 
@@ -179,9 +188,21 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-app.get('/dashboard', requireAuth, (req, res) => {
-    
-    res.render('index/authenticated');
+app.get('/dashboard', requireAuth, async (req, res) => {
+    console.log('Rendering dashboard for user ID:', req.session.userId);
+
+    try {
+        const user = await User.findById(req.session.userId).lean();
+        if (!user) {
+            return res.status(404).send("User not found.");
+        }
+
+        // Pass the user object to the template
+        res.render('index/authenticated', { user });
+    } catch (err) {
+        console.error('Error fetching user:', err);
+        res.status(500).send("An error occurred while loading the dashboard.");
+    }
 });
 
 // Profile Route
