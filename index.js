@@ -30,27 +30,59 @@ let connectedClients = [];
 
 app.ws('/ws', (socket) => {
     console.log('WebSocket connection established');
+    const username = socket.upgradeReq?.headers['username']; 
+    connectedClients.push({ socket, username });
+    connectedClients.forEach(client => {
+        if (client.socket.readyState === 1) {
+            client.socket.send(JSON.stringify({
+                type: 'user_joined',
+                username,
+                onlineUsers: connectedClients.map(c => c.username).filter(Boolean),
+            }));
+        }
+    });
 
-    socket.on('message', (rawMessage) => {
-        
+    socket.on('message', async (rawMessage) => {
+        console.log('Received WebSocket message:', rawMessage);
         try {
             const parsedMessage = JSON.parse(rawMessage);
-            console.log('Parsed message:', parsedMessage);
+            if (parsedMessage.type === 'chat_message') {
+                const { recipient, message } = parsedMessage;
+                connectedClients.forEach(client => {
+                    if (client.username === recipient && client.socket.readyState === 1) {
+                        client.socket.send(JSON.stringify({
+                            type: 'new_message',
+                            username,
+                            timestamp: new Date().toISOString(),
+                            message,
+                        }));
+                    }
+                });
+            }
         } catch (err) {
             console.error('Error parsing WebSocket message:', err);
         }
     });
 
     socket.on('close', () => {
-        connectedClients = connectedClients.filter(client => client !== socket);
+        connectedClients = connectedClients.filter(client => client.socket !== socket);
+        connectedClients.forEach(client => {
+            if (client.socket.readyState === 1) {
+                client.socket.send(JSON.stringify({
+                    type: 'user_left',
+                    username,
+                    onlineUsers: connectedClients.map(c => c.username).filter(Boolean),
+                }));
+            }
+        });
+
         console.log('WebSocket connection closed. Remaining clients:', connectedClients.length);
     });
 
-    connectedClients.push(socket);
     console.log('New WebSocket client connected. Total clients:', connectedClients.length);
 });
-
-// Added some middleware to help with authenicating user.
+// Added some middleware to help with authenicating user, its just a simple check for a user ID to help me with clean posting of the profile EJS and showing personalized data.
+//If it failes to find a user ID it redirects them to log in.
 function requireAuth(req, res, next) {
     if (!req.session.userId) {
         console.log('Authentication failed: No session user ID');
@@ -61,9 +93,33 @@ function requireAuth(req, res, next) {
 }
 
 
-app.get('/', async (request, response) => {
-    response.render('index/unauthenticated');
+app.get('/', (req, res) => {
+    console.log('Rendering unauthenticated index page');
+    res.render('index/unauthenticated');
 });
+
+// Chat Route
+app.get('/chat/:recipient', requireAuth, async (req, res) => {
+    console.log('Rendering chat page for user:', req.session.userId, 'with recipient:', req.params.recipient);
+
+    const { recipient } = req.params;
+    const sender = req.session.username;
+
+    try {
+        const chatHistory = await Message.find({
+            $or: [
+                { sender, recipient },
+                { sender: recipient, recipient: sender }
+            ]
+        }).sort({ timestamp: 1 });
+
+        res.render('chat', { chatHistory, sender, recipient });
+    } catch (err) {
+        console.error('Error fetching chat history:', err);
+        res.status(500).send('Error loading chat page.');
+    }
+});
+
 
 app.get('/login', async (request, response) => {
     res.render('login', { errorMessage: null });
@@ -122,13 +178,15 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-app.get('/dashboard', async (request, response) => {
-
-    return response.render('index/authenticated');
+app.get('/dashboard', requireAuth, (req, res) => {
+    
+    res.render('index/authenticated');
 });
 
+// Profile Route
 app.get('/profile', requireAuth, (req, res) => {
-    res.render('profile'); 
+    console.log('Rendering profile page for user ID:', req.session.userId);
+    res.render('profile');
 });
 
 app.post('/logout', (req, res) => {
