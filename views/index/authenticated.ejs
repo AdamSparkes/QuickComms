@@ -1,26 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Dashboard</title>
-    <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
     <% include("../partials/header", { user: user }) %>
     <div class="main-content">
-        <h1>Welcome, <%= user.username %>!</h1>
-        <p>You're logged in! Start chatting with your friends.</p>
+      <h1>Welcome, <%= user.username %>!</h1>
+      <p>You're logged in! Start chatting with your friends.</p>
 
-        <!-- Existing buttons -->
-        <a href="/new-message" class="action-button">Start a New Message</a>
-        <a href="/profile" class="action-button">View Profile</a>
+      <!-- Existing buttons -->
+      <a href="/new-message" class="action-button">Messages</a>
+      <a href="/profile" class="action-button">View Profile</a>
 
-        <!-- New button to go to the chatroom -->
-        <a href="/chatroom" class="action-button">Join Public Chatroom</a>
+      <!-- New button to go to the chatroom -->
+      <a href="/chatroom" class="action-button">Join Public Chatroom</a>
 
-        <form action="/logout" method="POST" style="display: inline;">
-            <button type="submit" class="action-button">Logout</button>
-        </form>
+      <form action="/logout" method="POST" style="display: inline">
+        <button type="submit" class="action-button">Logout</button>
+      </form>
     </div>
-</body>
+    <!-- Snowflakes Container -->
+    <div class="snowflakes" aria-hidden="true">
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❄</div>
+      <div class="snowflake">❄</div>
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❄</div>
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❄</div>
+    </div>
+  </body>
 </html>

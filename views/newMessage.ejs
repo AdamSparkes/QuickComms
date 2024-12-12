@@ -1,27 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Start a New Message</title>
-    <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
     <% include("partials/header", { user: sender }) %>
     <div class="main-content">
-        <h1>Who ya wanna chat with?</h1>
-        <p>Select a user to message:</p>
-        <ul>
-            <% if (users.length === 0) { %>
-                <p>No other users are available to message.</p>
-            <% } else { %>
-                <% users.forEach(user => { %>
-                    <li>
-                        <a href="/chat/<%= user.username %>"><%= user.username %></a>
-                    </li>
-                <% }); %>
-            <% } %>
-        </ul>
-        <a href="/dashboard" class="action-button">Back to Dashboard</a>
+      <h1>Who ya wanna chat with?</h1>
+      <p>Select a user to message:</p>
+      <ul>
+        <% if (users.length === 0) { %>
+        <p>No other users are available to message.</p>
+        <% } else { %> <% users.forEach(user => { %>
+        <li>
+          <a href="/chat/<%= user.username %>"><%= user.username %></a>
+        </li>
+        <% }); %> <% } %>
+      </ul>
+      <a href="/dashboard" class="action-button">Back to Dashboard</a>
     </div>
-</body>
+    <!-- Snowflakes Container -->
+    <div class="snowflakes" aria-hidden="true">
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❄</div>
+      <div class="snowflake">❄</div>
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❄</div>
+      <div class="snowflake">❅</div>
+      <div class="snowflake">❆</div>
+      <div class="snowflake">❄</div>
+    </div>
+  </body>
 </html>
