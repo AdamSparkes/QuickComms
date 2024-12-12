@@ -1,3 +1,5 @@
+<!-- views/signup.ejs -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,9 +8,15 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <% include("partials/header", { user: null }) %>
     <div class="main-content">
       <h1>Sign Up</h1>
-      <form action="/signup" method="post" style="width: 300px">
+      <form
+        action="/signup"
+        method="post"
+        class="auth-form"
+        style="width: 300px"
+      >
         <% if (errorMessage) { %>
         <p class="error-message"><%= errorMessage %></p>
         <% } %>
@@ -17,13 +25,17 @@
           <input type="text" id="username" name="username" required />
         </div>
         <div class="form-input-container">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" />
+        </div>
+        <div class="form-input-container">
           <label for="password">Password:</label>
           <input type="password" id="password" name="password" required />
         </div>
         <button type="submit" class="action-button">Sign Up</button>
       </form>
       <p style="margin-top: 20px">
-        Already have an account bro? <a href="/login">Login</a>
+        Already have an account? <a href="/login">Login</a>
       </p>
     </div>
   </body>

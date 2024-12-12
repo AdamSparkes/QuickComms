@@ -10,7 +10,9 @@
     <div class="main-content">
       <h1>Welcome to your profile, <%= profileUser.username %>!</h1>
       <p>Email: <%= profileUser.email || "Not provided" %></p>
-      <p>Joined on: <%= new Date(profileUser.createdAt).toLocaleDateString() %></p>
+      <p>
+        Joined on: <%= new Date(profileUser.createdAt).toLocaleDateString() %>
+      </p>
       <a href="/dashboard" class="action-button">Go to Dashboard</a>
     </div>
   </body>
