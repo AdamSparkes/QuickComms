@@ -205,8 +205,22 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/dashboard", requireAuth, (req, res) => {
-  res.render("index/authenticated");
+app.get('/dashboard', requireAuth, async (req, res) => {
+  console.log('Rendering dashboard for user ID:', req.session.userId);
+
+  try {
+      // Fetch the user from the database
+      const user = await User.findById(req.session.userId).lean();
+      if (!user) {
+          return res.status(404).send("User not found.");
+      }
+
+      // Pass the user object to the EJS template
+      res.render('index/authenticated', { user });
+  } catch (err) {
+      console.error('Error fetching user:', err);
+      res.status(500).send("An error occurred while loading the dashboard.");
+  }
 });
 
 // Profile Route
