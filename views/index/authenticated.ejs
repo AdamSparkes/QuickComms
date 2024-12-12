@@ -6,5 +6,16 @@
     <title>Sonic's DashBoard (lol get it)</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body></body>
+  <body>
+    <% include("../partials/header", {user: user}) %>
+    <div class="main-content">
+      <h1>Welcome, <%= user.username %>!</h1>
+      <p>You're logged in dogg! join the chat with the homies</p>
+      <a href="/chat" class="action-button">Go to chat</a>
+      <a href="/profile" class="action-button">View My Profile</a>
+      <% if (user.role === 'admin') { %>
+      <a href="/admin" class="action-button">Admin Dashboard</a>
+      <% } %>
+    </div>
+  </body>
 </html>
