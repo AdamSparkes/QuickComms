@@ -21,13 +21,16 @@
         <p>
           <strong>Email:</strong> <%= profileUser.email || "Not provided" %>
         </p>
+        <% if (profileUser.role) { %>
+          <p>
+            <strong>Role:</strong> 
+            <%= profileUser.role.charAt(0).toUpperCase() + profileUser.role.slice(1) %>
+          </p>
+        <% } else { %>
+          <p><strong>Role:</strong> Not specified</p>
+        <% } %>
         <p>
-          <strong>Role:</strong> <%= profileUser.role.charAt(0).toUpperCase() +
-          profileUser.role.slice(1) %>
-        </p>
-        <p>
-          <strong>Joined On:</strong> <%= new
-          Date(profileUser.createdAt).toLocaleDateString() %>
+          <strong>Joined On:</strong> <%= new Date(profileUser.createdAt).toLocaleDateString() %>
         </p>
       </div>
       <a href="/dashboard" class="back-button">Back to Dashboard</a>
