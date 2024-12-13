@@ -1,10 +1,8 @@
-// admin.js
-
 const express = require("express");
 const router = express.Router();
 const User = require("./models/User");
 
-// Middleware to check if the user is an admin
+// Middleware
 function requireAdmin(req, res, next) {
   if (!req.session.userId) {
     return res.redirect("/login");
@@ -23,7 +21,7 @@ function requireAdmin(req, res, next) {
     });
 }
 
-// Admin dashboard - list all users with delete option
+// Admin dashboard  list all users with delete option
 router.get("/", requireAdmin, async (req, res) => {
   try {
     const users = await User.find().lean();

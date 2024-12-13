@@ -1,13 +1,10 @@
-/* public/styles.css */
-
-/* Reset some default browser styles for consistency */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Root Variables for Easy Theme Management */
+/* Root Vars */
 :root {
   --primary-color: #5d8efb;
   --secondary-color: #000000;
@@ -29,10 +26,9 @@
   --font-family: "Poppins", sans-serif;
 }
 
-/* Import Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
 
-/* Body Styling */
+/* Body */
 body {
   background: var(--background-gradient);
   background-size: 400% 400%;
@@ -42,11 +38,11 @@ body {
   display: flex;
   color: var(--text-color);
   flex-direction: column;
-  overflow: hidden; /* Ensure snowflakes don't cause scroll */
-  position: relative; /* For positioning snowflakes */
+  overflow: hidden;
+  position: relative;
 }
 
-/* Keyframes for Background Animation */
+/*  Background Animation */
 @keyframes gradientAnimation {
   0% {
     background-position: 0% 50%;
@@ -59,7 +55,7 @@ body {
   }
 }
 
-/* Header Styling */
+/* Header  */
 header {
   width: 100%;
   background: var(--header-bg);
@@ -132,27 +128,26 @@ header nav form button:hover {
   color: #fff;
 }
 
-/* Main Content Styling */
+/* Main Content */
 .main-content {
   display: flex;
   justify-content: center;
   align-items: center;
   flex: 1;
   flex-direction: column;
-  padding-top: 100px; /* To prevent content from being hidden behind the fixed header */
+  padding-top: 100px;
   text-align: center;
   animation: fadeIn 2s ease forwards;
   opacity: 0;
 }
 
-/* Keyframes for Main Content Fade-In */
 @keyframes fadeIn {
   to {
     opacity: 1;
   }
 }
 
-/* Heading Styling */
+/* Heading */
 .main-content h1 {
   font-size: 4rem;
   margin-bottom: 20px;
@@ -161,14 +156,13 @@ header nav form button:hover {
   transform: translateY(-50px);
 }
 
-/* Keyframes for Heading Slide-Down */
 @keyframes slideDown {
   to {
     transform: translateY(0);
   }
 }
 
-/* List Styling */
+/* List */
 .main-content ul {
   margin: 20px 0;
   padding: 0;
@@ -191,7 +185,7 @@ header nav form button:hover {
   color: var(--secondary-color);
 }
 
-/* Form Styling */
+/* Form */
 .main-content form {
   font-size: 1rem;
   display: flex;
@@ -243,21 +237,21 @@ header nav form button:hover {
 /* Button Container */
 .button-container {
   display: flex;
-  flex-direction: row; /* Change to 'column' if buttons are arranged vertically */
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 20px; /* Add spacing between buttons */
+  gap: 20px;
   margin-top: 20px;
 }
 
-/* Action Button Styling */
+/* Action Button */
 .button-container .action-button {
   display: block;
-  flex-direction: column; /* Stack icon and text vertically */
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: auto; /* Increased size for better visibility */
-  height: 60px; /* Adjusted height for proportion */
+  width: auto;
+  height: 60px;
   background: linear-gradient(135deg, #ffffff, #f0f0f0);
   border-radius: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -268,9 +262,9 @@ header nav form button:hover {
   font-family: "Poppins", sans-serif;
   font-size: 1rem;
   color: #333;
-  position: relative; /* For ripple effect */
-  overflow: hidden; /* For ripple effect */
-  /* Ensure no conflicting margins */
+  position: relative;
+  overflow: hidden;
+
   margin: 0;
   margin-bottom: 100px;
 }
@@ -315,7 +309,7 @@ header nav form button:hover {
   }
 }
 
-/* Back Button Styling */
+/* Back Button */
 .back-button {
   position: relative;
   background: linear-gradient(
@@ -345,12 +339,12 @@ header nav form button:hover {
   );
 }
 
-/* Chat Container Styling */
+/* Chat Container */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 70vh; /* Reduced height from 80vh to 70vh */
-  max-width: 1000px; /* Increased max-width from 800px to 1000px */
+  height: 70vh;
+  max-width: 1000px;
   margin: 0 auto;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -414,7 +408,7 @@ header nav form button:hover {
   transform: scale(1.05);
 }
 
-/* Admin Dashboard Styling */
+/* Admin Dashboard  */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -434,7 +428,7 @@ th {
   text-transform: uppercase;
 }
 
-/* Admin Action Button Styling */
+/* Admin Action Button  */
 .action-button {
   padding: 5px 10px;
   background-color: #ff4c4c;
@@ -451,9 +445,7 @@ th {
   background-color: #e04343;
 }
 
-/* ======== Christmas Snowfall Animation ======== */
-
-/* Keyframes for snowflake falling */
+/* snowflake falling */
 @keyframes snowFall {
   0% {
     transform: translateY(-10vh);
@@ -472,12 +464,12 @@ th {
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* Allows clicks to pass through */
-  z-index: 500; /* Ensures snowflakes are behind other content */
+  pointer-events: none;
+  z-index: 500;
   overflow: hidden;
 }
 
-/* Individual snowflake styling */
+/* Individual snowflake  */
 .snowflake {
   position: absolute;
   top: -10vh;
@@ -488,7 +480,7 @@ th {
   animation: snowFall linear infinite;
 }
 
-/* Generate multiple snowflakes with varying sizes and animation durations */
+/* Generate multiple snowflakes */
 .snowflake:nth-child(1) {
   left: 10%;
   font-size: 1.5rem;
@@ -558,5 +550,3 @@ th {
   animation-duration: 13s;
   animation-delay: 0s;
 }
-
-/* ======== End of Snowfall Animation ======== */

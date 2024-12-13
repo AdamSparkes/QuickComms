@@ -98,11 +98,11 @@ function displayNotification(message) {
 
 /**
  * Updates the online users list
- * @param {Array<string>} onlineUsers - List of online usernames
+ * @param {Array<string>} onlineUsers
  */
 function updateOnlineUsersList(onlineUsers) {
   if (!onlineUsersContainer) return;
-  onlineUsersContainer.innerHTML = ""; // Clear existing list
+  onlineUsersContainer.innerHTML = "";
 
   onlineUsers.forEach((username) => {
     const userEl = document.createElement("li");

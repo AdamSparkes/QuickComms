@@ -11,18 +11,16 @@
       <h1>Welcome, <%= user.username %>!</h1>
       <p>You're logged in! Start chatting with your friends.</p>
 
-      <!-- Existing buttons -->
       <a href="/new-message" class="action-button">Messages</a>
       <a href="/profile" class="action-button">View Profile</a>
 
-      <!-- New button to go to the chatroom -->
       <a href="/chatroom" class="action-button">Join Public Chatroom</a>
 
       <form action="/logout" method="POST" style="display: inline">
         <button type="submit" class="action-button">Logout</button>
       </form>
     </div>
-    <!-- Snowflakes Container -->
+
     <div class="snowflakes" aria-hidden="true">
       <div class="snowflake">❅</div>
       <div class="snowflake">❆</div>

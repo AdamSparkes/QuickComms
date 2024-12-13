@@ -1,5 +1,3 @@
-// models/User.js
-
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -12,7 +10,7 @@ const UserSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
-    sparse: true, // Allows multiple documents without an email
+    sparse: true,
     trim: true,
     lowercase: true,
     match: [/\S+@\S+\.\S+/, "is invalid"],
