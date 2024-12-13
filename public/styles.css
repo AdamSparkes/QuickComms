@@ -131,7 +131,7 @@ header nav form button:hover {
 /* Main Content Styles */
 .main-content {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   flex: 1;
   flex-direction: column;
@@ -344,8 +344,8 @@ header nav form button:hover {
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 70vh;
-  max-width: 1000px;
+  height: 50%;
+
   margin: 0 auto;
   border: 1px solid #ccc;
   border-radius: 5px;

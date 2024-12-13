@@ -14,7 +14,7 @@ const adminRoutes = require("./admin"); // Import admin routes
 const app = express();
 
 // Hardcoded Admin Code
-const ADMIN_CODE = "ADMIN123"; // Replace with your desired admin code
+const ADMIN_CODE = "BEANS"; // Replace with your desired admin code
 
 // Set up session middleware BEFORE using expressWs
 const sessionMiddleware = session({
