@@ -11,7 +11,7 @@ if (form && input) {
     const message = input.value.trim();
     if (!message) return;
 
-    // Determine if we're in a public chatroom or a private chat
+    // public chat or private chat
     if (window.isPublicChat) {
       webSocket.send(
         JSON.stringify({
@@ -41,27 +41,22 @@ if (form && input) {
 webSocket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
 
-  // For private messages
   if (data.type === "new_message") {
     displayChatMessage(data.username, data.timestamp, data.message);
   }
 
-  // For public messages
   if (data.type === "public_new_message") {
     displayChatMessage(data.username, data.timestamp, data.message);
   }
 
-  // For user joined
   if (data.type === "user_joined") {
     displayNotification(`${data.username} has joined the chat.`);
   }
 
-  // For user left
   if (data.type === "user_left") {
     displayNotification(`${data.username} has left the chat.`);
   }
 
-  // For updating online users
   if (data.type === "update_online_users") {
     updateOnlineUsersList(data.onlineUsers);
   }
