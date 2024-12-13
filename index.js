@@ -49,7 +49,7 @@ app.set("view engine", "ejs");
 
 let connectedClients = [];
 
-// Middleware to ensure user is authenticated
+// A quick middleware to ensure user has an ID, helped me easily post Usernames to page based off ID
 function requireAuth(req, res, next) {
   if (!req.session.userId) {
     console.log("Authentication failed: No session user ID");
@@ -88,11 +88,11 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    // Store both userId and username in session
+    
     req.session.userId = user._id;
     req.session.username = user.username;
 
-    // Redirect based on role
+    // changes which page you see based on role
     if (user.role === "admin") {
       res.redirect("/admin");
     } else {
@@ -120,7 +120,7 @@ app.post("/signup", async (req, res) => {
   }
 
   try {
-    // Check if username is taken
+    
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.render("signup", {
@@ -128,7 +128,7 @@ app.post("/signup", async (req, res) => {
       });
     }
 
-    // If email is provided, check if it's already used
+    
     if (email) {
       const existingEmail = await User.findOne({ email });
       if (existingEmail) {
@@ -156,7 +156,7 @@ app.post("/signup", async (req, res) => {
     });
     await newUser.save();
 
-    // Store both userId and username in session
+    
     req.session.userId = newUser._id;
     req.session.username = newUser.username;
 
@@ -250,7 +250,7 @@ app.get("/chat/:recipient", requireAuth, async (req, res) => {
 app.get("/chatroom", requireAuth, async (req, res) => {
   console.log("Rendering public chatroom for user:", req.session.userId);
   try {
-    // Fetch all public messages
+    
     const chatHistory = await Message.find({ recipient: "public" }).sort({
       timestamp: 1,
     });
@@ -273,23 +273,23 @@ app.post("/logout", (req, res) => {
   });
 });
 
-// Mount admin routes
+// Admin route
 app.use("/admin", adminRoutes);
 
 // WebSocket route
 app.ws("/ws", (socket, req) => {
   console.log("WebSocket connection established");
 
-  // Access the session data
+ 
   const session = req.session;
   const username = session?.username || "Anonymous";
 
-  // Add to connected clients
+  
   connectedClients.push({ socket, username });
   console.log(`User connected via WebSocket: ${username}`);
   console.log(`Total connected clients: ${connectedClients.length}`);
 
-  // Notify all users that a new user has joined
+  
   connectedClients.forEach((client) => {
     if (client.socket.readyState === 1) {
       client.socket.send(
@@ -302,7 +302,7 @@ app.ws("/ws", (socket, req) => {
     }
   });
 
-  // Broadcast the updated list of online users
+  // Show list of user for Admins
   const onlineUsers = connectedClients.map((client) => client.username);
   connectedClients.forEach((client) => {
     if (client.socket.readyState === 1) {
@@ -320,7 +320,7 @@ app.ws("/ws", (socket, req) => {
     try {
       const parsedMessage = JSON.parse(rawMessage);
 
-      // Handle private chat messages
+      //Bunch of handlers for messages
       if (parsedMessage.type === "chat_message") {
         const { recipient, message } = parsedMessage;
         const newMessage = new Message({
@@ -330,9 +330,9 @@ app.ws("/ws", (socket, req) => {
         });
         await newMessage.save();
 
-        // Broadcast to sender and recipient
+        
         connectedClients.forEach((client) => {
-          // Send to recipient if connected
+          
           if (client.username === recipient && client.socket.readyState === 1) {
             client.socket.send(
               JSON.stringify({
@@ -344,7 +344,7 @@ app.ws("/ws", (socket, req) => {
             );
           }
 
-          // Send to sender as well
+          
           if (client.username === username && client.socket.readyState === 1) {
             client.socket.send(
               JSON.stringify({
@@ -358,7 +358,7 @@ app.ws("/ws", (socket, req) => {
         });
       }
 
-      // Handle public chat messages
+      // Handler for public chats
       if (parsedMessage.type === "public_message") {
         const { message } = parsedMessage;
         const newMessage = new Message({
@@ -368,7 +368,7 @@ app.ws("/ws", (socket, req) => {
         });
         await newMessage.save();
 
-        // Broadcast to ALL connected clients
+        // send that shit to everyone connected
         connectedClients.forEach((client) => {
           if (client.socket.readyState === 1) {
             client.socket.send(
@@ -394,7 +394,7 @@ app.ws("/ws", (socket, req) => {
     console.log(`WebSocket connection closed for user: ${username}`);
     console.log(`Remaining connected clients: ${connectedClients.length}`);
 
-    // Notify all users that a user has left
+    // User has left the chat
     connectedClients.forEach((client) => {
       if (client.socket.readyState === 1) {
         client.socket.send(
@@ -407,7 +407,7 @@ app.ws("/ws", (socket, req) => {
       }
     });
 
-    // Broadcast the updated list of online users
+    
     const onlineUsers = connectedClients.map((client) => client.username);
     connectedClients.forEach((client) => {
       if (client.socket.readyState === 1) {
