@@ -28,7 +28,7 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
 
-/* Body */
+/* Body Styles */
 body {
   background: var(--background-gradient);
   background-size: 400% 400%;
@@ -42,7 +42,7 @@ body {
   position: relative;
 }
 
-/*  Background Animation */
+/* Background Animation */
 @keyframes gradientAnimation {
   0% {
     background-position: 0% 50%;
@@ -55,7 +55,7 @@ body {
   }
 }
 
-/* Header  */
+/* Header Styles */
 header {
   width: 100%;
   background: var(--header-bg);
@@ -128,7 +128,7 @@ header nav form button:hover {
   color: #fff;
 }
 
-/* Main Content */
+/* Main Content Styles */
 .main-content {
   display: flex;
   justify-content: center;
@@ -147,7 +147,7 @@ header nav form button:hover {
   }
 }
 
-/* Heading */
+/* Heading Styles */
 .main-content h1 {
   font-size: 4rem;
   margin-bottom: 20px;
@@ -162,7 +162,7 @@ header nav form button:hover {
   }
 }
 
-/* List */
+/* List Styles */
 .main-content ul {
   margin: 20px 0;
   padding: 0;
@@ -185,7 +185,7 @@ header nav form button:hover {
   color: var(--secondary-color);
 }
 
-/* Form */
+/* Form Styles */
 .main-content form {
   font-size: 1rem;
   display: flex;
@@ -234,7 +234,7 @@ header nav form button:hover {
   transform: scale(1.02);
 }
 
-/* Button Container */
+/* Button Container Styles */
 .button-container {
   display: flex;
   flex-direction: row;
@@ -244,7 +244,7 @@ header nav form button:hover {
   margin-top: 20px;
 }
 
-/* Action Button */
+/* Action Button Styles */
 .button-container .action-button {
   display: block;
   flex-direction: column;
@@ -264,7 +264,6 @@ header nav form button:hover {
   color: #333;
   position: relative;
   overflow: hidden;
-
   margin: 0;
   margin-bottom: 100px;
 }
@@ -309,7 +308,7 @@ header nav form button:hover {
   }
 }
 
-/* Back Button */
+/* Back Button Styles */
 .back-button {
   position: relative;
   background: linear-gradient(
@@ -327,6 +326,8 @@ header nav form button:hover {
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   overflow: hidden;
   display: inline-block;
+  margin-top: 50px;
+  margin-bottom: 50px;
 }
 
 .back-button:hover {
@@ -339,7 +340,7 @@ header nav form button:hover {
   );
 }
 
-/* Chat Container */
+/* Chat Container Styles */
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -408,7 +409,7 @@ header nav form button:hover {
   transform: scale(1.05);
 }
 
-/* Admin Dashboard  */
+/* Admin Dashboard Styles */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -428,7 +429,7 @@ th {
   text-transform: uppercase;
 }
 
-/* Admin Action Button  */
+/* Admin Action Button Styles */
 .action-button {
   padding: 5px 10px;
   background-color: #ff4c4c;
@@ -445,7 +446,7 @@ th {
   background-color: #e04343;
 }
 
-/* snowflake falling */
+/* Snowflake Falling Animation */
 @keyframes snowFall {
   0% {
     transform: translateY(-10vh);
@@ -457,7 +458,7 @@ th {
   }
 }
 
-/* Container for snowflakes */
+/* Container for Snowflakes */
 .snowflakes {
   position: fixed;
   top: 0;
@@ -469,7 +470,7 @@ th {
   overflow: hidden;
 }
 
-/* Individual snowflake  */
+/* Individual Snowflake Styles */
 .snowflake {
   position: absolute;
   top: -10vh;
@@ -480,7 +481,7 @@ th {
   animation: snowFall linear infinite;
 }
 
-/* Generate multiple snowflakes */
+/* Generate Multiple Snowflakes */
 .snowflake:nth-child(1) {
   left: 10%;
   font-size: 1.5rem;
@@ -549,4 +550,223 @@ th {
   font-size: 1.7rem;
   animation-duration: 13s;
   animation-delay: 0s;
+}
+
+/* Profile Container Enhancements */
+.profile-container {
+  background: rgb(0, 0, 0);
+  color: #f6f6f6;
+  padding: 50px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  max-width: 1600px;
+  margin: 120px auto 40px;
+  width: 90%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.profile-container:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Cover Photo Styles */
+.profile-cover {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  border-radius: 15px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.profile-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.profile-cover:hover img {
+  transform: scale(1.1);
+}
+
+/* Profile Header Enhancements */
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  background-color: #5d8efb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 60px;
+  font-weight: bold;
+  margin-right: 30px;
+  text-transform: uppercase;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  border: 5px solid var(--accent-color);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
+
+.profile-details {
+  flex: 1;
+  position: relative;
+}
+
+.profile-details h2 {
+  margin: 0;
+  font-size: 48px;
+  color: #ffffff;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+  animation: floatIn 1s ease forwards;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+@keyframes floatIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-details p {
+  margin: 10px 0 0 0;
+  color: #ddd;
+  font-size: 20px;
+  animation: fadeInText 1.5s ease forwards;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+@keyframes fadeInText {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Profile Info  */
+.profile-info {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.profile-info h3 {
+  margin-bottom: 15px;
+  color: #ffffff;
+  font-size: 28px;
+  border-bottom: 2px solid #ffffff;
+  display: inline-block;
+  padding-bottom: 5px;
+  width: 100%;
+  text-align: left;
+}
+
+.profile-info p {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 20px;
+  width: calc(50% - 10px);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.profile-info p:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-5px);
+}
+
+.profile-info strong {
+  color: var(--accent-color);
+}
+
+/* Additional Profile Sections */
+.profile-bio {
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+  animation: fadeInSection 1s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInSection {
+  to {
+    opacity: 1;
+  }
+}
+
+.profile-social {
+  margin-top: 30px;
+  display: flex;
+  gap: 20px;
+  animation: slideInSocial 1s ease forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes slideInSocial {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-social a {
+  color: #ffffff;
+  font-size: 24px;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.profile-social a:hover {
+  color: var(--accent-color);
+  transform: scale(1.2);
+}
+
+/* Profile Info Cards */
+.profile-info p {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+/* Smooth Transitions for Profile Elements */
+.profile-container,
+.profile-header,
+.profile-info p,
+.back-button,
+.profile-bio,
+.profile-social {
+  transition: all 0.3s ease;
 }
